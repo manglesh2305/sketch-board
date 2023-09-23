@@ -5,6 +5,7 @@ let eraserToolCont = document.querySelector(".eraser-tool-cont");
 let pencil = document.querySelector(".pencil");
 let eraser = document.querySelector(".eraser");
 let sticky = document.querySelector(".sticky");
+let upload = document.querySelector(".upload");
 let optionsFlag = true;
 let pencilFlag = false;
 let eraserFlag = false;
@@ -52,23 +53,15 @@ eraser.addEventListener("click", (e) => {
     }
 })
 
-sticky.addEventListener("click", (e) => {
+function createSticky(stickyTemplateHTML) {
     let stickyCont = document.createElement("div");
     stickyCont.setAttribute("class", "sticky-cont");
-    stickyCont.innerHTML = ` 
-    <div class="header-cont">
-        <div class="minimize"></div>
-        <div class="remove"></div>
-    </div>
-    <div class="note-cont">
-        <textarea></textarea>
-    </div>
-    `;
+    stickyCont.innerHTML = stickyTemplateHTML;
     document.body.append(stickyCont);
 
     let remove = stickyCont.querySelector(".remove");
     let minimize = stickyCont.querySelector(".minimize");
-    notesAction(remove, minimize, stickyCont);
+
 
     stickyCont.onmousedown = function (e) {
         dragAndDrop(stickyCont, e);
@@ -77,18 +70,36 @@ sticky.addEventListener("click", (e) => {
     stickyCont.ondragstart = function () {
         return false;
     };
+    notesAction(remove, minimize, stickyCont);
+}
+
+sticky.addEventListener("click", (e) => {
+    let stickyTemplateHTML = ` 
+    <div class="header-cont">
+        <div class="minimize"></div>
+        <div class="remove"></div>
+    </div>
+    <div class="note-cont">
+        <textarea></textarea>
+    </div>
+    `;
+    createSticky(stickyTemplateHTML);
 })
 
 function notesAction(remove, minimize, stickyCont) {
     // console.log(remove,minimize,stickyCont);
-    remove.addEventListener("click", (e) => {
-        stickyCont.remove();
+    remove.addEventListener("keypress", (e) => {
+        if (e.keyCode === 13) {
+            stickyCont.remove();
+        }
     })
-    minimize.addEventListener("click", (e) => {
-        let noteCont = stickyCont.querySelector(".note-cont");
-        let display = getComputedStyle(noteCont).getPropertyValue("display");
-        if (display === "none") noteCont.style.display = "block";
-        else noteCont.style.display = "none";
+    minimize.addEventListener("keypress", (e) => {
+        if (e.keyCode === 13) {
+            let noteCont = stickyCont.querySelector(".note-cont");
+            let display = getComputedStyle(noteCont).getPropertyValue("display");
+            if (display === "none") noteCont.style.display = "block";
+            else noteCont.style.display = "none";
+        }
     })
 }
 
@@ -124,3 +135,23 @@ function dragAndDrop(element, event) {
     };
 
 };
+
+upload.addEventListener("click", (e) => {
+    let input = document.createElement("input");
+    input.setAttribute("type", 'file');
+    input.click();
+    input.addEventListener("change", (e) => {
+        let file = input.files[0];
+        let url = URL.createObjectURL(file);
+        let stickyTemplateHTML = ` 
+    <div class="header-cont">
+        <div class="minimize"></div>
+        <div class="remove"></div>
+    </div>
+    <div class="note-cont">
+        <img src = "${url}" />
+    </div>
+    `;
+     createSticky(stickyTemplateHTML);
+    })
+})

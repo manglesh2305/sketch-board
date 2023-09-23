@@ -112,7 +112,7 @@ body{
 .sticky-cont{
     height: 15rem;
     width: 15rem;
-    background-color: lightblue;
+    /* background-color: lightblue; */
     position: absolute;
     top: 15rem;
     left: 10rem;
@@ -147,4 +147,8 @@ textarea{
     border: none;
     outline: none;
     resize: none;
+}
+img{
+    height: 100%;
+    width: 100%;
 }
