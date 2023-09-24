@@ -30,13 +30,40 @@ tool.lineWidth = pencilWidth;
 
 canvas.addEventListener("mousedown", (e) => {
     mousedown = true;
-    tool.beginPath();
-    tool.moveTo(e.clientX, e.clientY);
+    // tool.beginPath();
+    // tool.moveTo(e.clientX, e.clientY);
+
+    // beginPath({
+    //     x:e.clientX,
+    //     y:e.clientY
+    // })
+
+    let data = {
+        x:e.clientX,
+        y:e.clientY
+    }
+    //Send data to server
+    socket.emit("beginPath",data);
 })
 canvas.addEventListener("mousemove", (e) => {
     if (!mousedown) return;
-    tool.lineTo(e.clientX, e.clientY);
-    tool.stroke();
+    // tool.lineTo(e.clientX, e.clientY);
+    // tool.stroke();
+
+    // drawStroke({
+    //     x:e.clientX,
+    //     y:e.clientY,
+    //     color:eraserFlag ? eraserColor : penColor,
+    //     width: eraserFlag ? eraserWidth : pencilWidth
+    // })
+
+    let data = {
+        x:e.clientX,
+        y:e.clientY,
+        color:eraserFlag ? eraserColor : penColor,
+        width: eraserFlag ? eraserWidth : pencilWidth
+    }
+    socket.emit("drawStroke",data);
 })
 canvas.addEventListener('mouseup', (e) => {
     mousedown = false;
@@ -44,6 +71,18 @@ canvas.addEventListener('mouseup', (e) => {
     undoRedoTracker.push(url);
     track = undoRedoTracker.length - 1;
 })
+
+function beginPath(strokeObj) {
+    tool.beginPath();
+    tool.moveTo(strokeObj.x,strokeObj.y);
+}
+
+function drawStroke(strokeObj) {
+    tool.strokeStyle = strokeObj.color;
+    tool.lineWidth = strokeObj.width;
+    tool.lineTo(strokeObj.x,strokeObj.y);
+    tool.stroke();
+}
 
 pencilColor.forEach((colorElem) => {
     colorElem.addEventListener("click", (e) => {
@@ -83,19 +122,21 @@ download.addEventListener("click", (e) => {
 
 undo.addEventListener("click", (e) => {
     if (track > 0) track--;
-    let trackObj = {
+    let data= {
         trackValue: track,
         undoRedoTracker
     }
-    undoRedoCanvas(trackObj);
+    // undoRedoCanvas(trackObj);
+    socket.emit("undoRedoCanvas",data);
 })
 redo.addEventListener("click", (e) => {
     if(track < undoRedoTracker.length-1) track++;
-    let trackObj = {
+    let data = {
         trackValue: track,
         undoRedoTracker
     }
-    undoRedoCanvas(trackObj);
+    // undoRedoCanvas(trackObj);
+    socket.emit("undoRedoCanvas",data);
 })
 
 function undoRedoCanvas(trackObj){
@@ -108,3 +149,16 @@ function undoRedoCanvas(trackObj){
         tool.drawImage(img,0,0,canvas.width,canvas.height)
     }
 }
+
+socket.on("beginPath",(data) => {
+    // data -> data from server
+    beginPath(data);
+})
+
+socket.on("drawStroke",(data) => {
+    drawStroke(data);
+})
+
+socket.on("undoRedoCanvas",(data)=>{
+    undoRedoCanvas(data);
+})
